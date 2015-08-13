@@ -32,9 +32,134 @@ from nltk.tokenize import RegexpTokenizer
 #from textstat.textstat import textstat
 import time
 import re
-import sys
 import os
-import sys
+"""Retrieve an attachment from a Message.
+""" 
+  
+import base64
+from apiclient import errors
+import os
+import httplib2
+
+from apiclient import discovery
+import oauth2client
+from oauth2client import client
+from oauth2client import tools
+
+try:
+    import argparse
+    flags = argparse.ArgumentParser(parents=[tools.argparser]).parse_args()
+except ImportError:
+    flags = None
+
+SCOPES = 'https://www.googleapis.com/auth/gmail.readonly'
+CLIENT_SECRET_FILE = 'client_secret.json'
+APPLICATION_NAME = 'Gmail API Quickstart'
+
+def get_credentials():
+    """Gets valid user credentials from storage.
+
+    If nothing has been stored, or if the stored credentials are invalid,
+    the OAuth2 flow is completed to obtain the new credentials.
+
+    Returns:
+        Credentials, the obtained credential.
+    """
+    home_dir = os.path.expanduser('~')
+    credential_dir = os.path.join(home_dir, '.credentials')
+    if not os.path.exists(credential_dir):
+        os.makedirs(credential_dir)
+    credential_path = os.path.join(credential_dir,
+                                   'gmail-quickstart.json')
+
+    store = oauth2client.file.Storage(credential_path)
+    credentials = store.get()
+    if not credentials or credentials.invalid:
+        flow = client.flow_from_clientsecrets(CLIENT_SECRET_FILE, SCOPES)
+        flow.user_agent = APPLICATION_NAME
+        if flags:
+            credentials = tools.run_flow(flow, store, flags)
+        else: # Needed only for compatability with Python 2.6
+            credentials = tools.run(flow, store)
+        print('Storing credentials to ' + credential_path)
+    return credentials
+
+def attachments():
+    """List all Messages of the user's mailbox matching the query.
+
+    Args:
+    service: Authorized Gmail API service instance.
+    user_id: User's email address. The special value "me"
+    can be used to indicate the authenticated user.
+    query: String used to filter messages returned.
+    Eg.- 'from:user@some_domain.com' for Messages from a particular sender.
+
+    Returns:
+    List of Messages that match the criteria of the query. Note that the
+    returned list contains Message IDs, you must use get with the
+    appropriate ID to get the details of a Message.
+    """
+    credentials = get_credentials()
+    http = credentials.authorize(httplib2.Http())
+    service = discovery.build('gmail', 'v1', http=http)
+    user_id = "me"
+    query = 'label:raspberry'
+    try:
+        response = service.users().messages().list(userId=user_id,q=query).execute()
+        messages = []
+        if 'messages' in response:
+            
+            messages.extend(response['messages'])
+
+        while 'nextPageToken' in response:
+            page_token = response['nextPageToken']
+            response = service.users().messages().list(userId=user_id, q=query,pageToken=page_token).execute()
+            messages.extend(response['messages'])
+        return messages
+    except errors.HttpError:
+        print('didnt work')
+
+def GetAttachments(msg_ids):
+	"""Get and store attachment from Message with given id.
+
+	Args:
+	service: Authorized Gmail API service instance.
+	user_id: User's email address. The special value "me"
+	can be used to indicate the authenticated user.
+	msg_id: ID of Message containing attachment.
+	store_dir: The directory used to store attachments.
+	"""    
+	credentials = get_credentials()
+	http = credentials.authorize(httplib2.Http())
+	service = discovery.build('gmail', 'v1', http=http)
+	user_id = "me"
+	for x in msg_ids:
+	    try:
+	        message = service.users().messages().get(userId='me', id=x['id']).execute()
+
+	        for part in message['payload']['parts']:
+	            if part['filename']:
+	                if 'data' in part['body']:
+	                    data=part['body']['data']
+	                else:
+	                    att_id=part['body']['attachmentId']
+	                    att=service.users().messages().attachments().get(userId=user_id, messageId=x['id'],id=att_id).execute()
+	                    data=att['data']
+	                file_data = base64.urlsafe_b64decode(data.encode('UTF-8'))
+	                
+	                path = part['filename']
+	                if 'csv' in path[-5:]:
+	                    print(path)
+	                    with open(path, 'wb') as f:
+
+	                        f.write(file_data)
+	                        f.close()
+
+	    except errors.HttpError:
+	        print('Error XX')
+
+
+
 
 
 def scrape(URL,KW):
@@ -219,15 +344,16 @@ def activate():
 		for x in os.listdir():
 			waiting.append(x)
 
-		donea = []
+		donelist = []
 		while len(waiting)>0:
 			output = "CA_output_"+waiting[0][9:]
 			analysis(waiting[0],output)
 			os.rename(waiting[0], 'done/'+waiting[0])
-			donea.append(waiting.pop(0))
-			print(done[-1])
+			donelist.append(waiting.pop(0))
+			print(donelist[-1])
 		count += 1
 	while count<7:
+		GetAttachments(attachments())
 		doit(count)
 		time.sleep(3600)
 
