@@ -33,7 +33,8 @@ from nltk.tokenize import RegexpTokenizer
 import time
 import re
 import sys
-
+import os
+import sys
 
 
 def scrape(URL,KW):
@@ -43,8 +44,6 @@ def scrape(URL,KW):
 	#for URL in URLlist:
 	end = URL[-10:]
 	if "pdf" in end.lower():
-		print('FUCK')
-
 		return ["NA","NA",[0,1,2],"NA","NA","NA","NA","NA","NA","NA"]
 	else:
 		r = requests.get(URL,headers=headers,timeout=25)
@@ -212,9 +211,28 @@ def url_cleaner(url):
 		else:
 			return url_match.group(3)
 
+def activate():
+	count = 0 
+	def doit(count):
+		waiting= []
+		for x in os.listdir():
+			waiting.append(x)
+
+		done = []
+		while len(waiting)>0:
+			output = "CA_output_"+waiting[0][9:]
+			analysis(waiting[0],output)
+			os.rename(waiting[0], 'done/'+waiting[0])
+			done.append(waiting.pop(0))
+			print(done[-1])
+		count += 1
+	while count<7:
+		doit(count)
+		time.sleep(3600)
+
+
+
 
 if __name__ == '__main__':
-	input_1 = sys.argv[1]
-	output_1 = sys.argv[2]
-	analysis(input_1, output_1)
+	activate()
 
