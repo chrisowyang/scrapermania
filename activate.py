@@ -212,18 +212,19 @@ def url_cleaner(url):
 			return url_match.group(3)
 
 def activate():
+	os.chdir('files')
 	count = 0 
 	def doit(count):
 		waiting= []
 		for x in os.listdir():
 			waiting.append(x)
 
-		done = []
+		donea = []
 		while len(waiting)>0:
 			output = "CA_output_"+waiting[0][9:]
 			analysis(waiting[0],output)
 			os.rename(waiting[0], 'done/'+waiting[0])
-			done.append(waiting.pop(0))
+			donea.append(waiting.pop(0))
 			print(done[-1])
 		count += 1
 	while count<7:
