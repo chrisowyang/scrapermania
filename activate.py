@@ -38,7 +38,6 @@ import os
   
 import base64
 from apiclient import errors
-import os
 import httplib2
 
 from apiclient import discovery
@@ -339,23 +338,26 @@ def url_cleaner(url):
 def activate():
 	
 	count = 0 
+	path = os.getcwd()
 	def doit(count):
 
 		waiting= []
 		for x in os.listdir():
-			waiting.append(x)
+			if "csv" in x[-5:]:
+				waiting.append(x)
 
 		donelist = []
 		while len(waiting)>0:
-			output = "CA_output_"+waiting[0][9:]
+			output = path + "files/CA_output_"+waiting[0][9:]
 			analysis(waiting[0],output)
-			os.rename(waiting[0], 'done/'+waiting[0])
+			os.rename(waiting[0], path+'done/'+waiting[0])
 			donelist.append(waiting.pop(0))
 			print(donelist[-1])
 		count += 1
 	while count<7:
 
 		GetAttachments(attachments())
+		os.chdir(path+'files')
 		doit(count)
 		time.sleep(3600)
 
