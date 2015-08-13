@@ -349,7 +349,7 @@ def activate():
 
 		donelist = []
 		while len(waiting)>0:
-			output = path + "files/CA_output_"+waiting[0][9:]
+			output = path + "/files/CA_output_"+waiting[0][9:]
 			analysis(waiting[0],output)
 			os.rename(waiting[0], path+'done/'+waiting[0])
 			donelist.append(waiting.pop(0))
@@ -358,7 +358,7 @@ def activate():
 	while count<7:
 
 		GetAttachments(attachments())
-		os.chdir(path+'files')
+		
 		doit(count)
 		time.sleep(3600)
 
