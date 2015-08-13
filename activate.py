@@ -340,7 +340,7 @@ def activate():
 	
 	count = 0 
 	def doit(count):
-		os.chdir('files')
+
 		waiting= []
 		for x in os.listdir():
 			waiting.append(x)
@@ -354,7 +354,7 @@ def activate():
 			print(donelist[-1])
 		count += 1
 	while count<7:
-		os.chdir('..')
+
 		GetAttachments(attachments())
 		doit(count)
 		time.sleep(3600)
