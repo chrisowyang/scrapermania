@@ -339,6 +339,7 @@ def activate():
 	
 	count = 0 
 	path = os.getcwd()
+	os.chdir(path +'/files')
 	def doit(count):
 
 		waiting= []
