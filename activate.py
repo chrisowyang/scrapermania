@@ -39,15 +39,20 @@ import sys
 def scrape(URL,KW):
 	headers = {'User-Agent' : "Mozilla/5.0 (Windows NT 6.0; WOW64) AppleWebKit/534.24 (KHTML, like Gecko) Chrome/11.0.696.16 Safari/534.24"}
 
-
-	#for URL in URLlist:
 	start = time.time()
-	r = requests.get(URL,headers=headers,timeout=25)
-	load_time = time.time() - start
-	stripped = r.text
-	stripped = stripped.replace('\n', '. ')
-	soup = BeautifulSoup(stripped)
+	#for URL in URLlist:
+	end = URL[-10:]
+	if "pdf" in end.lower():
+		print('FUCK')
 
+		return ["NA","NA",[0,1,2],"NA","NA","NA","NA","NA","NA","NA"]
+	else:
+		r = requests.get(URL,headers=headers,timeout=25)
+		stripped = r.text
+		stripped = stripped.replace('\n', '. ')
+		soup = BeautifulSoup(stripped,"html.parser")
+		
+	load_time = start - time.time()
 	#TITLE TAGS
 	start = time.time()
 	try:
