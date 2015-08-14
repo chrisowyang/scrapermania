@@ -351,7 +351,8 @@ def activate():
 		while len(waiting)>0:
 			output = path + "/files/CA_output_"+waiting[0][9:]
 			analysis(waiting[0],output)
-			os.rename(waiting[0], path+'done/'+waiting[0])
+			os.rename(waiting[0], path+'/done/'+waiting[0])
+			os.rename(output,path+'/done/CA_output_'+waiting[0][9:])
 			donelist.append(waiting.pop(0))
 			print(donelist[-1])
 		count += 1
