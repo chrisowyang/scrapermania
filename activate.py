@@ -114,9 +114,22 @@ def attachments():
             page_token = response['nextPageToken']
             response = service.users().messages().list(userId=user_id, q=query,pageToken=page_token).execute()
             messages.extend(response['messages'])
+
         return messages
     except errors.HttpError:
         print('didnt work')
+
+def labels(idx):
+	credentials = get_credentials()
+	http = credentials.authorize(httplib2.Http())
+	service = discovery.build('gmail', 'v1', http=http)
+
+	try:
+	    msg_labels = {'removeLabelIds': ['raspberry'], 'addLabelIds': ['done']}
+	    response = service.users().messages().modify(userId='me',id=[idx],body=msg_labels).execute()
+	    return response
+	except:
+	    print('label error')
 
 def GetAttachments(msg_ids):
 	"""Get and store attachment from Message with given id.
@@ -153,6 +166,7 @@ def GetAttachments(msg_ids):
 
 	                        f.write(file_data)
 	                        f.close()
+	        labels(x['id'])
 
 	    except errors.HttpError:
 	        print('Error XX')
